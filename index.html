@@ -1,1 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MusicMap v0.1 – City Top Tracks</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
 
+    body {
+      margin: 0;
+      padding: 0;
+      background: #050816;
+      color: #f5f5f5;
+    }
+
+    header {
+      padding: 24px 16px 8px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0.05em;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #1f2937 0, #020617 55%);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .top-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .selector-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    select {
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      font-size: 14px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    select:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px #38bdf8;
+    }
+
+    .meta {
+      text-align: right;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .city-name {
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 8px 6px;
+      text-align: left;
+    }
+
+    th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.75;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    tbody tr:nth-child(odd) {
+      background: rgba(15, 23, 42, 0.7);
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.3);
+    }
+
+    tbody tr:hover {
+      background: rgba(56, 189, 248, 0.18);
+    }
+
+    .rank-cell {
+      width: 50px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .track-cell {
+      font-weight: 500;
+    }
+
+    .artist-cell {
+      opacity: 0.9;
+    }
+
+    .source-note {
+      margin-top: 16px;
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 11px;
+      padding: 16px;
+      opacity: 0.65;
+    }
+
+    @media (max-width: 640px) {
+      header h1 {
+        font-size: 22px;
+      }
+      .card {
+        padding: 16px;
+      }
+      .top-row {
+        align-items: flex-start;
+      }
+      .meta {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MusicMap v0.1</h1>
+    <p>Shazam style top tracks per city, early demo</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="top-row">
+        <div class="selector-group">
+          <label for="citySelect">Choose a city</label>
+          <select id="citySelect"></select>
+        </div>
+        <div class="meta">
+          <div><span class="city-name" id="cityLabel"></span> · <span id="countryLabel"></span></div>
+          <div>Sample data as of <span id="dateLabel"></span></div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Track</th>
+            <th>Artist</th>
+          </tr>
+        </thead>
+        <tbody id="tracksBody">
+          <!-- Filled by JavaScript -->
+        </tbody>
+      </table>
+
+      <div class="source-note">
+        Data is placeholder for demo only, concept inspired by city based Shazam charts.  
+        Goal of MusicMap is to show what the world is listening to, per city.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    MusicMap · early concept demo · built with static HTML and JavaScript
+  </footer>
+
+  <script>
+    // Demo dataset, feel free to adjust titles and cities.
+    const musicData = [
+      {
+        city: "Amsterdam",
+        country: "Netherlands",
+        date: "2025-11-29",
+        tracks: [
+          { rank: 1, title: "Neon Skyline", artist: "Skywave" },
+          { rank: 2, title: "Canal Lights", artist: "Lowlands Collective" },
+          { rank: 3, title: "October Nights", artist: "Noorderwind" },
+          { rank: 4, title: "Midnight Tram", artist: "Eastside Echoes" },
+          { rank: 5, title: "Golden Bikes", artist: "Vondel Groove" },
+          { rank: 6, title: "Damp Streets", artist: "City Glow" },
+          { rank: 7, title: "Coffee At Centraal", artist: "Platform 5" },
+          { rank: 8, title: "Rooftop Drizzle", artist: "Cloud District" },
+          { rank: 9, title: "Westside Echo", artist: "Ringroad" },
+          { rank: 10, title: "Sleepless In De Pijp", artist: "Midnight Market" }
+        ]
+      },
+      {
+        city: "Berlin",
+        country: "Germany",
+        date: "2025-11-29",
+        tracks: [
+          { rank: 1, title: "U-Bahn Pulse", artist: "Concrete Signal" },
+          { rank: 2, title: "Kreuzberg Nights", artist: "Spree District" },
+          { rank: 3, title: "TV Tower Glow", artist: "Alexanderplatz" },
+          { rank: 4, title: "Brick And Bass", artist: "Warehouse Lines" },
+          { rank: 5, title: "Neon Wall", artist: "East Echo" },
+          { rank: 6, title: "Templehof Air", artist: "Runway Stories" },
+          { rank: 7, title: "Ringbahn Loop", artist: "Orbit 41" },
+          { rank: 8, title: "Late Shift", artist: "Night Clerk" },
+          { rank: 9, title: "Graffiti Choir", artist: "Wall Writers" },
+          { rank: 10, title: "Grey Morning Rave", artist: "Sunday Service" }
+        ]
+      },
+      {
+        city: "London",
+        country: "United Kingdom",
+        date: "2025-11-29",
+        tracks: [
+          { rank: 1, title: "Rain On Brick Lane", artist: "East End Echo" },
+          { rank: 2, title: "Tube Delay", artist: "Northern Line" },
+          { rank: 3, title: "Fog Over Thames", artist: "River Static" },
+          { rank: 4, title: "Camden Lights", artist: "Market Noise" },
+          { rank: 5, title: "West End Static", artist: "Soho Circuit" },
+          { rank: 6, title: "Brickbeat", artist: "Seven Sisters" },
+          { rank: 7, title: "Overground Drift", artist: "Highbury Loop" },
+          { rank: 8, title: "Umbrella Crowd", artist: "Piccadilly Flow" },
+          { rank: 9, title: "Tea After Midnight", artist: "Corner Flat" },
+          { rank: 10, title: "Taxi Echoes", artist: "Backseat Radio" }
+        ]
+      },
+      {
+        city: "New York",
+        country: "United States",
+        date: "2025-11-29",
+        tracks: [
+          { rank: 1, title: "Subway Static", artist: "Downtown Transit" },
+          { rank: 2, title: "Brooklyn Dusk", artist: "Bridge Lights" },
+          { rank: 3, title: "Times Square Haze", artist: "Neon Noise" },
+          { rank: 4, title: "Yellow Cab Chorus", artist: "Fifth Avenue" },
+          { rank: 5, title: "Rooftop Steam", artist: "Skyline Forms" },
+          { rank: 6, title: "Late Train Echo", artist: "Last Stop" },
+          { rank: 7, title: "Fire Escape Dreams", artist: "Tenement Soul" },
+          { rank: 8, title: "Harlem Nightwalk", artist: "Uptown Stripe" },
+          { rank: 9, title: "City Never Sleeps", artist: "AM Static" },
+          { rank: 10, title: "Concrete Sunrise", artist: "East River" }
+        ]
+      },
+      {
+        city: "Tokyo",
+        country: "Japan",
+        date: "2025-11-29",
+        tracks: [
+          { rank: 1, title: "Shibuya Crossing", artist: "Neon Footsteps" },
+          { rank: 2, title: "Midnight Ramen", artist: "Side Street" },
+          { rank: 3, title: "Arcade Lights", artist: "Pixel Bloom" },
+          { rank: 4, title: "JR Loop Line", artist: "Circle Train" },
+          { rank: 5, title: "Harajuku Echo", artist: "Color Run" },
+          { rank: 6, title: "Quiet Alley", artist: "Lantern Choir" },
+          { rank: 7, title: "Vending Machine Glow", artist: "Blue Can" },
+          { rank: 8, title: "Neon Kanji", artist: "Sign Language" },
+          { rank: 9, title: "Rain On Plastic", artist: "Umbrella Crowd" },
+          { rank: 10, title: "Sleepless Station", artist: "Last Departure" }
+        ]
+      }
+    ];
+
+    const citySelect = document.getElementById("citySelect");
+    const tracksBody = document.getElementById("tracksBody");
+    const cityLabel = document.getElementById("cityLabel");
+    const countryLabel = document.getElementById("countryLabel");
+    const dateLabel = document.getElementById("dateLabel");
+
+    function populateCitySelect() {
+      musicData.forEach((entry, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = `${entry.city}, ${entry.country}`;
+        citySelect.appendChild(option);
+      });
+    }
+
+    function renderCity(index) {
+      const entry = musicData[index];
+      if (!entry) return;
+
+      cityLabel.textContent = entry.city;
+      countryLabel.textContent = entry.country;
+      dateLabel.textContent = entry.date;
+
+      tracksBody.innerHTML = "";
+
+      entry.tracks.forEach(track => {
+        const tr = document.createElement("tr");
+
+        const rankTd = document.createElement("td");
+        rankTd.className = "rank-cell";
+        rankTd.textContent = track.rank;
+
+        const trackTd = document.createElement("td");
+        trackTd.className = "track-cell";
+        trackTd.textContent = track.title;
+
+        const artistTd = document.createElement("td");
+        artistTd.className = "artist-cell";
+        artistTd.textContent = track.artist;
+
+        tr.appendChild(rankTd);
+        tr.appendChild(trackTd);
+        tr.appendChild(artistTd);
+
+        tracksBody.appendChild(tr);
+      });
+    }
+
+    citySelect.addEventListener("change", (e) => {
+      const index = parseInt(e.target.value, 10);
+      renderCity(index);
+    });
+
+    // Initial setup
+    populateCitySelect();
+    citySelect.value = "0";
+    renderCity(0);
+  </script>
+</body>
+</html>
