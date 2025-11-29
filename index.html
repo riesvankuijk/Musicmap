@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>MusicMap – Global Top Tracks</title>
+  <title>MusicMap – City Charts</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -31,6 +31,7 @@
       color: #fff;
       border: 1px solid #333;
       border-radius: 6px;
+      min-width: 260px;
     }
 
     table {
@@ -55,6 +56,12 @@
       opacity: 0.7;
     }
 
+    .meta {
+      margin-bottom: 12px;
+      opacity: 0.8;
+      font-size: 14px;
+    }
+
     .footer {
       margin-top: 30px;
       opacity: 0.4;
@@ -66,9 +73,13 @@
 <body>
 
   <h1>MusicMap</h1>
-  <div class="subtitle">Live Shazam Top Tracks by Country</div>
+  <div class="subtitle">Live Shazam Top Tracks by City</div>
 
-  <select id="countrySelect"></select>
+  <div class="meta">
+    Stad: <span id="cityLabel">–</span> · Land: <span id="countryLabel">–</span>
+  </div>
+
+  <select id="citySelect"></select>
 
   <table>
     <thead>
@@ -86,102 +97,91 @@
   </table>
 
   <div class="footer">
-    Data source: Shazam · Updated live
+    Data source: Shazam (city charts) · Demo v1
   </div>
 
 <script>
-  const countries = [
-    { code: "AE", label: "United Arab Emirates" },
-    { code: "AR", label: "Argentina" },
-    { code: "AU", label: "Australia" },
-    { code: "BE", label: "Belgium" },
-    { code: "BR", label: "Brazil" },
-    { code: "CA", label: "Canada" },
-    { code: "CH", label: "Switzerland" },
-    { code: "CN", label: "China" },
-    { code: "DE", label: "Germany" },
-    { code: "DK", label: "Denmark" },
-    { code: "ES", label: "Spain" },
-    { code: "FI", label: "Finland" },
-    { code: "FR", label: "France" },
-    { code: "GB", label: "United Kingdom" },
-    { code: "GR", label: "Greece" },
-    { code: "IE", label: "Ireland" },
-    { code: "IL", label: "Israel" },
-    { code: "IN", label: "India" },
-    { code: "IT", label: "Italy" },
-    { code: "JP", label: "Japan" },
-    { code: "KR", label: "South Korea" },
-    { code: "MX", label: "Mexico" },
-    { code: "NL", label: "Netherlands" },
-    { code: "NO", label: "Norway" },
-    { code: "PL", label: "Poland" },
-    { code: "PT", label: "Portugal" },
-    { code: "RU", label: "Russia" },
-    { code: "SE", label: "Sweden" },
-    { code: "SG", label: "Singapore" },
-    { code: "TR", label: "Türkiye" },
-    { code: "UA", label: "Ukraine" },
-    { code: "US", label: "United States" },
-    { code: "ZA", label: "South Africa" }
+  // Een startset van steden (met hun Shazam city_id’s)
+  const cities = [
+    { id: "2759794", name: "Amsterdam", country: "NL" },
+    { id: "2745912", name: "Utrecht", country: "NL" },
+    { id: "2747891", name: "Rotterdam", country: "NL" },
+    { id: "2950159", name: "Berlin", country: "DE" },
+    { id: "2643743", name: "London", country: "GB" },
+    { id: "5128581", name: "New York City", country: "US" },
+    { id: "1850147", name: "Tokyo", country: "JP" },
+    { id: "3448439", name: "São Paulo", country: "BR" }
   ];
 
-  const countrySelect = document.getElementById("countrySelect");
+  const citySelect = document.getElementById("citySelect");
   const tracksBody = document.getElementById("tracksBody");
+  const cityLabel = document.getElementById("cityLabel");
+  const countryLabel = document.getElementById("countryLabel");
 
-  function populateCountries() {
-    countries.forEach((c, index) => {
+  function populateCities() {
+    cities.forEach((c, index) => {
       const option = document.createElement("option");
-      option.value = c.code;
-      option.textContent = c.label;
-      if (c.code === "NL") option.selected = true;
-      countrySelect.appendChild(option);
+      option.value = c.id;
+      option.textContent = `${c.name} (${c.country})`;
+      if (index === 0) option.selected = true;
+      citySelect.appendChild(option);
     });
   }
 
-  async function fetchTopTracks(countryCode) {
+  async function fetchTopTracksByCity(cityId, limit = 20) {
     const res = await fetch(
-      `/api/top-country?country_code=${countryCode}&limit=20`
+      `/api/top-city?city_id=${encodeURIComponent(cityId)}&limit=${limit}`
     );
-    if (!res.ok) throw new Error("API error");
+    if (!res.ok) {
+      throw new Error(`API error: ${res.status}`);
+    }
     return await res.json();
   }
 
   function renderTracks(tracks) {
     tracksBody.innerHTML = "";
 
+    if (!tracks || tracks.length === 0) {
+      tracksBody.innerHTML =
+        "<tr><td colspan='3'>Geen tracks gevonden voor deze stad.</td></tr>";
+      return;
+    }
+
     tracks.forEach(track => {
       const tr = document.createElement("tr");
-
       tr.innerHTML = `
         <td class="rank">${track.rank}</td>
         <td>${track.title}</td>
         <td>${track.artist}</td>
       `;
-
       tracksBody.appendChild(tr);
     });
   }
 
-  async function loadCountry(countryCode) {
+  async function loadCity(cityId) {
+    const city = cities.find(c => c.id === cityId);
+    cityLabel.textContent = city ? city.name : cityId;
+    countryLabel.textContent = city ? city.country : "–";
+
     tracksBody.innerHTML = "<tr><td colspan='3'>Loading…</td></tr>";
 
     try {
-      const data = await fetchTopTracks(countryCode);
+      const data = await fetchTopTracksByCity(cityId, 20);
       renderTracks(data.tracks || []);
     } catch (err) {
-      tracksBody.innerHTML =
-        "<tr><td colspan='3'>Error loading data</td></tr>";
       console.error(err);
+      tracksBody.innerHTML =
+        "<tr><td colspan='3'>Error loading data. Check console.</td></tr>";
     }
   }
 
-  countrySelect.addEventListener("change", e => {
-    loadCountry(e.target.value);
+  citySelect.addEventListener("change", e => {
+    loadCity(e.target.value);
   });
 
-  populateCountries();
-  loadCountry("NL");
+  // Init
+  populateCities();
+  loadCity(cities[0].id);
 </script>
 
 </body>
