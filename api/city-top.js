@@ -7,7 +7,10 @@ export default async function handler(req, res) {
   }
 
   // Gebruik de wereldwijde top charts als startpunt
-  const url = `https://${rapidApiHost}/v1/charts/world?limit=10`;
+ const countryCode = req.query.country_code || "US";
+
+const url = `https://${rapidApiHost}/v1/charts/world?country_code=${countryCode}&limit=10`;
+
 
   try {
     const response = await fetch(url, {
