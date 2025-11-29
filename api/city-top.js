@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
-  const cityId = req.query.city_id || "2779674"; // fallback city
-  const countryCode = req.query.country_code || "NL";
+  // We schakelen nu naar country charts ipv city charts
+  const countryCode = req.query.country_code || "NL"; // fallback NL
 
   const rapidApiKey = process.env.RAPIDAPI_KEY;
   const rapidApiHost = "shazam-core.p.rapidapi.com";
@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "RAPIDAPI_KEY not set in Vercel" });
   }
 
-  const url = `https://${rapidApiHost}/v1/charts/city?city_id=${cityId}&country_code=${countryCode}`;
+  const url = `https://${rapidApiHost}/v1/charts/country?country_code=${countryCode}&limit=10`;
 
   try {
     const response = await fetch(url, {
@@ -24,21 +24,20 @@ export default async function handler(req, res) {
       const errorText = await response.text();
       return res.status(response.status).json({
         error: "Shazam API error",
+        status: response.status,
         details: errorText,
       });
     }
 
     const rawData = await response.json();
 
-    // Shazam returns an array of track objects
-    const tracks = rawData.map((item, index) => ({
+    const tracks = (Array.isArray(rawData) ? rawData : []).map((item, index) => ({
       rank: index + 1,
       title: item.title ?? "Unknown title",
       artist: item.subtitle ?? "Unknown artist",
     }));
 
     res.status(200).json({
-      city_id: cityId,
       country: countryCode,
       date: new Date().toISOString().slice(0, 10),
       tracks,
