@@ -1,7 +1,4 @@
 export default async function handler(req, res) {
-  // We schakelen nu naar country charts ipv city charts
-  const countryCode = req.query.country_code || "NL"; // fallback NL
-
   const rapidApiKey = process.env.RAPIDAPI_KEY;
   const rapidApiHost = "shazam-core.p.rapidapi.com";
 
@@ -9,7 +6,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "RAPIDAPI_KEY not set in Vercel" });
   }
 
-  const url = `https://${rapidApiHost}/v1/charts/country?country_code=${countryCode}&limit=10`;
+  // Gebruik de wereldwijde top charts als startpunt
+  const url = `https://${rapidApiHost}/v1/charts/world?limit=10`;
 
   try {
     const response = await fetch(url, {
@@ -38,7 +36,7 @@ export default async function handler(req, res) {
     }));
 
     res.status(200).json({
-      country: countryCode,
+      scope: "world",
       date: new Date().toISOString().slice(0, 10),
       tracks,
     });
