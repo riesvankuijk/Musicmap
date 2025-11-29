@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   const countryCode = req.query.country_code || "RU"; // default: Rusland
-  const limit = req.query.limit || "10";
+const limit = req.query.limit || "20";              // standaard top 20
 
   const rapidApiKey = process.env.RAPIDAPI_KEY;
   const rapidApiHost = "shazam8.p.rapidapi.com";
