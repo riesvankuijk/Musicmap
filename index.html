@@ -217,111 +217,97 @@
     MusicMap · global music heatmap prototype
   </footer>
 
-  <script>
-    // Placeholder city list — vervang city_id & country door echte Shazam city IDs en country codes
-    const cities = [
-      { city_id: "2779674", city: "Demo City", country: "DZ", label: "Demo City, Algeria" },
-      { city_id: "2779674", city: "Demo City (NL)", country: "NL", label: "Demo City, Netherlands" },
-      { city_id: "2779674", city: "Demo City (US)", country: "US", label: "Demo City, United States" }
-      // Later kun je hier echte steden toevoegen met hun eigen city_id
-    ];
+<script>
+  // Beschikbare landen (kun je later uitbreiden)
+  const countries = [
+    { code: "NL", label: "Netherlands" },
+    { code: "DE", label: "Germany" },
+    { code: "GB", label: "United Kingdom" },
+    { code: "US", label: "United States" },
+    { code: "RU", label: "Russia" },
+    { code: "JP", label: "Japan" }
+  ];
 
-    const citySelect = document.getElementById("citySelect");
-    const tracksBody = document.getElementById("tracksBody");
-    const cityLabel = document.getElementById("cityLabel");
-    const countryLabel = document.getElementById("countryLabel");
-    const dateLabel = document.getElementById("dateLabel");
+  const citySelect = document.getElementById("citySelect"); // gebruiken we nu als country-select
+  const tracksBody = document.getElementById("tracksBody");
+  const cityLabel = document.getElementById("cityLabel");
+  const countryLabel = document.getElementById("countryLabel");
+  const dateLabel = document.getElementById("dateLabel");
 
-    function populateCitySelect() {
-      cities.forEach((city, index) => {
-        const option = document.createElement("option");
-        option.value = city.city_id;
-        option.textContent = city.label;
-        if (index === 0) option.selected = true;
-        citySelect.appendChild(option);
-      });
-    }
-
-    function getCityById(cityId) {
-      return cities.find((c) => c.city_id === cityId);
-    }
-
-    async function fetchCityData(cityId, countryCode) {
-      const res = await fetch(
-        `/api/city-top?city_id=${encodeURIComponent(cityId)}&country_code=${encodeURIComponent(countryCode)}`
-      );
-      if (!res.ok) {
-        throw new Error(`API error: ${res.status}`);
-      }
-      return await res.json();
-    }
-
-    function renderTracks(data, cityMeta) {
-      cityLabel.textContent = cityMeta.city || data.city_id || "-";
-      countryLabel.textContent = cityMeta.country || data.country || "";
-      dateLabel.textContent = data.date || "";
-
-      tracksBody.innerHTML = "";
-
-      (data.tracks || []).forEach((track) => {
-        const tr = document.createElement("tr");
-
-        const rankTd = document.createElement("td");
-        rankTd.className = "rank-cell";
-        rankTd.textContent = track.rank;
-
-        const trackTd = document.createElement("td");
-        trackTd.className = "track-cell";
-        trackTd.textContent = track.title;
-
-        const artistTd = document.createElement("td");
-        artistTd.className = "artist-cell";
-        artistTd.textContent = track.artist;
-
-        tr.appendChild(rankTd);
-        tr.appendChild(trackTd);
-        tr.appendChild(artistTd);
-
-        tracksBody.appendChild(tr);
-      });
-
-      if (!data.tracks || data.tracks.length === 0) {
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.colSpan = 3;
-        td.textContent = "No tracks found for this city.";
-        tr.appendChild(td);
-        tracksBody.appendChild(tr);
-      }
-    }
-
-    async function loadCity(cityMeta) {
-      if (!cityMeta) return;
-
-      tracksBody.innerHTML = "<tr><td colspan='3'>Loading…</td></tr>";
-
-      try {
-        const data = await fetchCityData(cityMeta.city_id, cityMeta.country);
-        renderTracks(data, cityMeta);
-      } catch (err) {
-        console.error(err);
-        tracksBody.innerHTML =
-          "<tr><td colspan='3'>Error loading data. Check console.</td></tr>";
-      }
-    }
-
-    citySelect.addEventListener("change", (e) => {
-      const cityMeta = getCityById(e.target.value);
-      loadCity(cityMeta);
+  function populateCountrySelect() {
+    countries.forEach((country, index) => {
+      const option = document.createElement("option");
+      option.value = country.code;
+      option.textContent = country.label;
+      if (index === 0) option.selected = true;
+      citySelect.appendChild(option);
     });
+  }
 
-    // Initial setup
-    populateCitySelect();
-    const firstCity = cities[0];
-    if (firstCity) {
-      citySelect.value = firstCity.city_id;
-      loadCity(firstCity);
+  async function fetchCountryData(countryCode) {
+    const res = await fetch(
+      `/api/top-country?country_code=${encodeURIComponent(countryCode)}&limit=10`
+    );
+    if (!res.ok) {
+      throw new Error(`API error: ${res.status}`);
     }
-  </script>
+    return await res.json();
+  }
+
+  function renderTracks(entry, selectedCountryLabel) {
+    cityLabel.textContent = selectedCountryLabel || entry.country || "-";
+    countryLabel.textContent = entry.country || "";
+    dateLabel.textContent = entry.date || "";
+
+    tracksBody.innerHTML = "";
+
+    (entry.tracks || []).forEach((track) => {
+      const tr = document.createElement("tr");
+
+      const rankTd = document.createElement("td");
+      rankTd.className = "rank-cell";
+      rankTd.textContent = track.rank;
+
+      const trackTd = document.createElement("td");
+      trackTd.className = "track-cell";
+      trackTd.textContent = track.title;
+
+      const artistTd = document.createElement("td");
+      artistTd.className = "artist-cell";
+      artistTd.textContent = track.artist;
+
+      tr.appendChild(rankTd);
+      tr.appendChild(trackTd);
+      tr.appendChild(artistTd);
+
+      tracksBody.appendChild(tr);
+    });
+  }
+
+  async function loadCountry(countryCode) {
+    const selected = countries.find((c) => c.code === countryCode);
+    const label = selected ? selected.label : countryCode;
+
+    tracksBody.innerHTML = "<tr><td colspan='3'>Loading…</td></tr>";
+    try {
+      const data = await fetchCountryData(countryCode);
+      renderTracks(data, label);
+    } catch (err) {
+      console.error(err);
+      tracksBody.innerHTML =
+        "<tr><td colspan='3'>Error loading data. Check console.</td></tr>";
+    }
+  }
+
+  citySelect.addEventListener("change", (e) => {
+    const countryCode = e.target.value;
+    loadCountry(countryCode);
+  });
+
+  // Initial setup
+  populateCountrySelect();
+  loadCountry(countries[0].code);
+</script>
+
 </body>
 </html>
