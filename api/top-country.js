@@ -29,10 +29,21 @@ export default async function handler(req, res) {
       });
     }
 
-    const rawData = await response.json();
+const rawData = await response.json();
 
-    // Voor nu geven we de ruwe data terug zodat we de structuur kunnen bekijken
-    return res.status(200).json(rawData);
+// rawData heeft o.a. een "tracks" array
+const tracks = (rawData.tracks || []).map((item, index) => ({
+  rank: index + 1,
+  title: item.title ?? "Unknown title",
+  artist: item.subtitle ?? "Unknown artist",
+}));
+
+return res.status(200).json({
+  country: countryCode,
+  date: new Date().toISOString().slice(0, 10),
+  tracks,
+});
+
   } catch (err) {
     console.error(err);
     return res.status(500).json({
