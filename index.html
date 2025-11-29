@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>MusicMap v0.1 – City Top Tracks</title>
+  <title>MusicMap v0.1 – City Top Tracks (Live)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     * {
@@ -173,7 +173,7 @@
 <body>
   <header>
     <h1>MusicMap v0.1</h1>
-    <p>Shazam style top tracks per city, early demo</p>
+    <p>Live city charts demo via Shazam Core · early prototype</p>
   </header>
 
   <main>
@@ -184,8 +184,12 @@
           <select id="citySelect"></select>
         </div>
         <div class="meta">
-          <div><span class="city-name" id="cityLabel"></span> · <span id="countryLabel"></span></div>
-          <div>Sample data as of <span id="dateLabel"></span></div>
+          <div>
+            <span class="city-name" id="cityLabel"></span>
+            ·
+            <span id="countryLabel"></span>
+          </div>
+          <div>Data as of <span id="dateLabel"></span></div>
         </div>
       </div>
 
@@ -203,104 +207,23 @@
       </table>
 
       <div class="source-note">
-        Data is placeholder for demo only, concept inspired by city based Shazam charts.  
-        Goal of MusicMap is to show what the world is listening to, per city.
+        Charts are fetched live via a backend call to Shazam Core on RapidAPI.  
+        This is a prototype to explore the MusicMap concept: which tracks are hot in which city.
       </div>
     </section>
   </main>
 
   <footer>
-    MusicMap · early concept demo · built with static HTML and JavaScript
+    MusicMap · global music heatmap prototype
   </footer>
 
   <script>
-    // Demo dataset, feel free to adjust titles and cities.
-    const musicData = [
-      {
-        city: "Amsterdam",
-        country: "Netherlands",
-        date: "2025-11-29",
-        tracks: [
-          { rank: 1, title: "Neon Skyline", artist: "Skywave" },
-          { rank: 2, title: "Canal Lights", artist: "Lowlands Collective" },
-          { rank: 3, title: "October Nights", artist: "Noorderwind" },
-          { rank: 4, title: "Midnight Tram", artist: "Eastside Echoes" },
-          { rank: 5, title: "Golden Bikes", artist: "Vondel Groove" },
-          { rank: 6, title: "Damp Streets", artist: "City Glow" },
-          { rank: 7, title: "Coffee At Centraal", artist: "Platform 5" },
-          { rank: 8, title: "Rooftop Drizzle", artist: "Cloud District" },
-          { rank: 9, title: "Westside Echo", artist: "Ringroad" },
-          { rank: 10, title: "Sleepless In De Pijp", artist: "Midnight Market" }
-        ]
-      },
-      {
-        city: "Berlin",
-        country: "Germany",
-        date: "2025-11-29",
-        tracks: [
-          { rank: 1, title: "U-Bahn Pulse", artist: "Concrete Signal" },
-          { rank: 2, title: "Kreuzberg Nights", artist: "Spree District" },
-          { rank: 3, title: "TV Tower Glow", artist: "Alexanderplatz" },
-          { rank: 4, title: "Brick And Bass", artist: "Warehouse Lines" },
-          { rank: 5, title: "Neon Wall", artist: "East Echo" },
-          { rank: 6, title: "Templehof Air", artist: "Runway Stories" },
-          { rank: 7, title: "Ringbahn Loop", artist: "Orbit 41" },
-          { rank: 8, title: "Late Shift", artist: "Night Clerk" },
-          { rank: 9, title: "Graffiti Choir", artist: "Wall Writers" },
-          { rank: 10, title: "Grey Morning Rave", artist: "Sunday Service" }
-        ]
-      },
-      {
-        city: "London",
-        country: "United Kingdom",
-        date: "2025-11-29",
-        tracks: [
-          { rank: 1, title: "Rain On Brick Lane", artist: "East End Echo" },
-          { rank: 2, title: "Tube Delay", artist: "Northern Line" },
-          { rank: 3, title: "Fog Over Thames", artist: "River Static" },
-          { rank: 4, title: "Camden Lights", artist: "Market Noise" },
-          { rank: 5, title: "West End Static", artist: "Soho Circuit" },
-          { rank: 6, title: "Brickbeat", artist: "Seven Sisters" },
-          { rank: 7, title: "Overground Drift", artist: "Highbury Loop" },
-          { rank: 8, title: "Umbrella Crowd", artist: "Piccadilly Flow" },
-          { rank: 9, title: "Tea After Midnight", artist: "Corner Flat" },
-          { rank: 10, title: "Taxi Echoes", artist: "Backseat Radio" }
-        ]
-      },
-      {
-        city: "New York",
-        country: "United States",
-        date: "2025-11-29",
-        tracks: [
-          { rank: 1, title: "Subway Static", artist: "Downtown Transit" },
-          { rank: 2, title: "Brooklyn Dusk", artist: "Bridge Lights" },
-          { rank: 3, title: "Times Square Haze", artist: "Neon Noise" },
-          { rank: 4, title: "Yellow Cab Chorus", artist: "Fifth Avenue" },
-          { rank: 5, title: "Rooftop Steam", artist: "Skyline Forms" },
-          { rank: 6, title: "Late Train Echo", artist: "Last Stop" },
-          { rank: 7, title: "Fire Escape Dreams", artist: "Tenement Soul" },
-          { rank: 8, title: "Harlem Nightwalk", artist: "Uptown Stripe" },
-          { rank: 9, title: "City Never Sleeps", artist: "AM Static" },
-          { rank: 10, title: "Concrete Sunrise", artist: "East River" }
-        ]
-      },
-      {
-        city: "Tokyo",
-        country: "Japan",
-        date: "2025-11-29",
-        tracks: [
-          { rank: 1, title: "Shibuya Crossing", artist: "Neon Footsteps" },
-          { rank: 2, title: "Midnight Ramen", artist: "Side Street" },
-          { rank: 3, title: "Arcade Lights", artist: "Pixel Bloom" },
-          { rank: 4, title: "JR Loop Line", artist: "Circle Train" },
-          { rank: 5, title: "Harajuku Echo", artist: "Color Run" },
-          { rank: 6, title: "Quiet Alley", artist: "Lantern Choir" },
-          { rank: 7, title: "Vending Machine Glow", artist: "Blue Can" },
-          { rank: 8, title: "Neon Kanji", artist: "Sign Language" },
-          { rank: 9, title: "Rain On Plastic", artist: "Umbrella Crowd" },
-          { rank: 10, title: "Sleepless Station", artist: "Last Departure" }
-        ]
-      }
+    // Placeholder city list — vervang city_id & country door echte Shazam city IDs en country codes
+    const cities = [
+      { city_id: "2779674", city: "Demo City", country: "DZ", label: "Demo City, Algeria" },
+      { city_id: "2779674", city: "Demo City (NL)", country: "NL", label: "Demo City, Netherlands" },
+      { city_id: "2779674", city: "Demo City (US)", country: "US", label: "Demo City, United States" }
+      // Later kun je hier echte steden toevoegen met hun eigen city_id
     ];
 
     const citySelect = document.getElementById("citySelect");
@@ -310,25 +233,37 @@
     const dateLabel = document.getElementById("dateLabel");
 
     function populateCitySelect() {
-      musicData.forEach((entry, index) => {
+      cities.forEach((city, index) => {
         const option = document.createElement("option");
-        option.value = index;
-        option.textContent = `${entry.city}, ${entry.country}`;
+        option.value = city.city_id;
+        option.textContent = city.label;
+        if (index === 0) option.selected = true;
         citySelect.appendChild(option);
       });
     }
 
-    function renderCity(index) {
-      const entry = musicData[index];
-      if (!entry) return;
+    function getCityById(cityId) {
+      return cities.find((c) => c.city_id === cityId);
+    }
 
-      cityLabel.textContent = entry.city;
-      countryLabel.textContent = entry.country;
-      dateLabel.textContent = entry.date;
+    async function fetchCityData(cityId, countryCode) {
+      const res = await fetch(
+        `/api/city-top?city_id=${encodeURIComponent(cityId)}&country_code=${encodeURIComponent(countryCode)}`
+      );
+      if (!res.ok) {
+        throw new Error(`API error: ${res.status}`);
+      }
+      return await res.json();
+    }
+
+    function renderTracks(data, cityMeta) {
+      cityLabel.textContent = cityMeta.city || data.city_id || "-";
+      countryLabel.textContent = cityMeta.country || data.country || "";
+      dateLabel.textContent = data.date || "";
 
       tracksBody.innerHTML = "";
 
-      entry.tracks.forEach(track => {
+      (data.tracks || []).forEach((track) => {
         const tr = document.createElement("tr");
 
         const rankTd = document.createElement("td");
@@ -349,17 +284,44 @@
 
         tracksBody.appendChild(tr);
       });
+
+      if (!data.tracks || data.tracks.length === 0) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 3;
+        td.textContent = "No tracks found for this city.";
+        tr.appendChild(td);
+        tracksBody.appendChild(tr);
+      }
+    }
+
+    async function loadCity(cityMeta) {
+      if (!cityMeta) return;
+
+      tracksBody.innerHTML = "<tr><td colspan='3'>Loading…</td></tr>";
+
+      try {
+        const data = await fetchCityData(cityMeta.city_id, cityMeta.country);
+        renderTracks(data, cityMeta);
+      } catch (err) {
+        console.error(err);
+        tracksBody.innerHTML =
+          "<tr><td colspan='3'>Error loading data. Check console.</td></tr>";
+      }
     }
 
     citySelect.addEventListener("change", (e) => {
-      const index = parseInt(e.target.value, 10);
-      renderCity(index);
+      const cityMeta = getCityById(e.target.value);
+      loadCity(cityMeta);
     });
 
     // Initial setup
     populateCitySelect();
-    citySelect.value = "0";
-    renderCity(0);
+    const firstCity = cities[0];
+    if (firstCity) {
+      citySelect.value = firstCity.city_id;
+      loadCity(firstCity);
+    }
   </script>
 </body>
 </html>
