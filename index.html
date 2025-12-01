@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>MusicMap – City Charts</title>
+  <title>MusicMap – Global Top Tracks (Apple)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -20,13 +20,16 @@
 
     .subtitle {
       opacity: 0.7;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+    }
+
+    .controls {
+      margin-bottom: 16px;
     }
 
     select {
       padding: 10px;
       font-size: 16px;
-      margin-bottom: 20px;
       background: #1e1e26;
       color: #fff;
       border: 1px solid #333;
@@ -34,16 +37,23 @@
       min-width: 260px;
     }
 
+    .meta {
+      margin-top: 8px;
+      opacity: 0.75;
+      font-size: 14px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
+      margin-top: 16px;
     }
 
     th, td {
       text-align: left;
-      padding: 10px;
+      padding: 8px 10px;
       border-bottom: 1px solid #2a2a33;
+      vertical-align: middle;
     }
 
     th {
@@ -52,13 +62,32 @@
     }
 
     .rank {
-      width: 50px;
+      width: 40px;
       opacity: 0.7;
     }
 
-    .meta {
-      margin-bottom: 12px;
-      opacity: 0.8;
+    .cover-cell {
+      width: 60px;
+    }
+
+    .cover-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+
+    .track-title a {
+      color: #f5f5f5;
+      text-decoration: none;
+    }
+
+    .track-title a:hover {
+      text-decoration: underline;
+    }
+
+    .artist {
+      opacity: 0.85;
       font-size: 14px;
     }
 
@@ -73,64 +102,78 @@
 <body>
 
   <h1>MusicMap</h1>
-  <div class="subtitle">Live Shazam Top Tracks by City</div>
+  <div class="subtitle">Live Apple Music Top Tracks per land</div>
 
-  <div class="meta">
-    Stad: <span id="cityLabel">–</span> · Land: <span id="countryLabel">–</span>
+  <div class="controls">
+    <select id="countrySelect"></select>
+    <div class="meta">
+      Land: <span id="countryLabel">NL</span> · Datum: <span id="dateLabel">–</span>
+    </div>
   </div>
-
-  <select id="citySelect"></select>
 
   <table>
     <thead>
       <tr>
         <th class="rank">#</th>
+        <th></th>
         <th>Track</th>
         <th>Artist</th>
       </tr>
     </thead>
     <tbody id="tracksBody">
       <tr>
-        <td colspan="3">Loading…</td>
+        <td colspan="4">Loading…</td>
       </tr>
     </tbody>
   </table>
 
   <div class="footer">
-    Data source: Shazam (city charts) · Demo v1
+    Data source: Apple Music top songs RSS · Demo v1
   </div>
 
 <script>
-  // Een startset van steden (met hun Shazam city_id’s)
-  const cities = [
-    { id: "2759794", name: "Amsterdam", country: "NL" },
-    { id: "2745912", name: "Utrecht", country: "NL" },
-    { id: "2747891", name: "Rotterdam", country: "NL" },
-    { id: "2950159", name: "Berlin", country: "DE" },
-    { id: "2643743", name: "London", country: "GB" },
-    { id: "5128581", name: "New York City", country: "US" },
-    { id: "1850147", name: "Tokyo", country: "JP" },
-    { id: "3448439", name: "São Paulo", country: "BR" }
+  // Beschikbare landen voor Apple Music RSS
+  const countries = [
+    { code: "NL", label: "Netherlands" },
+    { code: "BE", label: "Belgium" },
+    { code: "DE", label: "Germany" },
+    { code: "FR", label: "France" },
+    { code: "GB", label: "United Kingdom" },
+    { code: "US", label: "United States" },
+    { code: "ES", label: "Spain" },
+    { code: "IT", label: "Italy" },
+    { code: "SE", label: "Sweden" },
+    { code: "NO", label: "Norway" },
+    { code: "DK", label: "Denmark" },
+    { code: "FI", label: "Finland" },
+    { code: "IE", label: "Ireland" },
+    { code: "PT", label: "Portugal" },
+    { code: "BR", label: "Brazil" },
+    { code: "MX", label: "Mexico" },
+    { code: "CA", label: "Canada" },
+    { code: "AU", label: "Australia" },
+    { code: "JP", label: "Japan" },
+    { code: "KR", label: "South Korea" }
   ];
 
-  const citySelect = document.getElementById("citySelect");
-  const tracksBody = document.getElementById("tracksBody");
-  const cityLabel = document.getElementById("cityLabel");
+  const countrySelect = document.getElementById("countrySelect");
   const countryLabel = document.getElementById("countryLabel");
+  const dateLabel = document.getElementById("dateLabel");
+  const tracksBody = document.getElementById("tracksBody");
 
-  function populateCities() {
-    cities.forEach((c, index) => {
+  function populateCountries() {
+    countries.forEach(c => {
       const option = document.createElement("option");
-      option.value = c.id;
-      option.textContent = `${c.name} (${c.country})`;
-      if (index === 0) option.selected = true;
-      citySelect.appendChild(option);
+      option.value = c.code;
+      option.textContent = c.label;
+      if (c.code === "NL") option.selected = true;
+      countrySelect.appendChild(option);
     });
   }
 
-  async function fetchTopTracksByCity(cityId, limit = 20) {
+  async function fetchTopTracks(countryCode, limit = 20) {
     const res = await fetch(
-      `/api/top-city?city_id=${encodeURIComponent(cityId)}&limit=${limit}`
+      `/api/top-country-apple?country_code=${encodeURIComponent(countryCode)}&limit=${encodeURIComponent(limit)}`
     );
     if (!res.ok) {
       throw new Error(`API error: ${res.status}`);
@@ -138,50 +181,80 @@
     return await res.json();
   }
 
-  function renderTracks(tracks) {
+  function renderTracks(data) {
+    countryLabel.textContent = data.country || "–";
+    dateLabel.textContent = data.date || "–";
+
+    const tracks = data.tracks || [];
     tracksBody.innerHTML = "";
 
-    if (!tracks || tracks.length === 0) {
-      tracksBody.innerHTML =
-        "<tr><td colspan='3'>Geen tracks gevonden voor deze stad.</td></tr>";
+    if (tracks.length === 0) {
+      tracksBody.innerHTML = "<tr><td colspan='4'>Geen tracks gevonden.</td></tr>";
       return;
     }
 
     tracks.forEach(track => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="rank">${track.rank}</td>
-        <td>${track.title}</td>
-        <td>${track.artist}</td>
-      `;
+
+      const rankTd = document.createElement("td");
+      rankTd.className = "rank";
+      rankTd.textContent = track.rank;
+
+      const coverTd = document.createElement("td");
+      coverTd.className = "cover-cell";
+      if (track.cover) {
+        const img = document.createElement("img");
+        img.src = track.cover;
+        img.alt = track.title || "Cover";
+        img.className = "cover-img";
+        coverTd.appendChild(img);
+      }
+
+      const titleTd = document.createElement("td");
+      titleTd.className = "track-title";
+      if (track.link) {
+        const a = document.createElement("a");
+        a.href = track.link;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.textContent = track.title;
+        titleTd.appendChild(a);
+      } else {
+        titleTd.textContent = track.title;
+      }
+
+      const artistTd = document.createElement("td");
+      artistTd.className = "artist";
+      artistTd.textContent = track.artist;
+
+      tr.appendChild(rankTd);
+      tr.appendChild(coverTd);
+      tr.appendChild(titleTd);
+      tr.appendChild(artistTd);
+
       tracksBody.appendChild(tr);
     });
   }
 
-  async function loadCity(cityId) {
-    const city = cities.find(c => c.id === cityId);
-    cityLabel.textContent = city ? city.name : cityId;
-    countryLabel.textContent = city ? city.country : "–";
-
-    tracksBody.innerHTML = "<tr><td colspan='3'>Loading…</td></tr>";
-
+  async function loadCountry(countryCode) {
+    tracksBody.innerHTML = "<tr><td colspan='4'>Loading…</td></tr>";
     try {
-      const data = await fetchTopTracksByCity(cityId, 20);
-      renderTracks(data.tracks || []);
+      const data = await fetchTopTracks(countryCode, 20);
+      renderTracks(data);
     } catch (err) {
       console.error(err);
       tracksBody.innerHTML =
-        "<tr><td colspan='3'>Error loading data. Check console.</td></tr>";
+        "<tr><td colspan='4'>Error loading data. Check console.</td></tr>";
     }
   }
 
-  citySelect.addEventListener("change", e => {
-    loadCity(e.target.value);
+  countrySelect.addEventListener("change", e => {
+    loadCountry(e.target.value);
   });
 
   // Init
-  populateCities();
-  loadCity(cities[0].id);
+  populateCountries();
+  loadCountry("NL");
 </script>
 
 </body>
