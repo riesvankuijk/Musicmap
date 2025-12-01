@@ -34,7 +34,14 @@
       color: #fff;
       border: 1px solid #333;
       border-radius: 6px;
-      min-width: 260px;
+      min-width: 220px;
+      margin-right: 10px;
+    }
+
+    .label {
+      font-size: 14px;
+      margin-right: 6px;
+      opacity: 0.8;
     }
 
     .meta {
@@ -91,6 +98,69 @@
       font-size: 14px;
     }
 
+    .section-title {
+      margin-top: 32px;
+      margin-bottom: 8px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .compare-card {
+      background: #181820;
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid #262636;
+    }
+
+    .compare-card h3 {
+      margin: 0 0 8px 0;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .compare-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      max-height: 320px;
+      overflow-y: auto;
+      font-size: 14px;
+    }
+
+    .compare-list li {
+      padding: 4px 0;
+      border-bottom: 1px solid #262636;
+    }
+
+    .compare-list li span {
+      opacity: 0.85;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: 6px;
+    }
+
+    .tag-both {
+      background: #245b3f;
+      color: #bfffd7;
+    }
+
+    .tag-unique {
+      background: #5b2424;
+      color: #ffd7d7;
+    }
+
     .footer {
       margin-top: 30px;
       opacity: 0.4;
@@ -105,12 +175,20 @@
   <div class="subtitle">Live Apple Music Top Tracks per land</div>
 
   <div class="controls">
-    <select id="countrySelect"></select>
+    <div style="margin-bottom: 8px;">
+      <span class="label">Hoofdland:</span>
+      <select id="countrySelectPrimary"></select>
+    </div>
+    <div>
+      <span class="label">Vergelijk met:</span>
+      <select id="countrySelectSecondary"></select>
+    </div>
     <div class="meta">
-      Land: <span id="countryLabel">NL</span> · Datum: <span id="dateLabel">–</span>
+      Hoofdland: <span id="countryLabel">NL</span> · Datum: <span id="dateLabel">–</span>
     </div>
   </div>
 
+  <!-- Hoofdland top 20 -->
   <table>
     <thead>
       <tr>
@@ -126,6 +204,15 @@
       </tr>
     </tbody>
   </table>
+
+  <!-- Vergelijking -->
+  <div class="section-title" id="compareTitle">
+    Vergelijking: <span id="compareLabel">NL vs DE</span>
+  </div>
+
+  <div id="compareContainer" class="compare-grid">
+    <!-- Wordt gevuld door JS -->
+  </div>
 
   <div class="footer">
     Data source: Apple Music top songs RSS · Demo v1
@@ -156,18 +243,27 @@
     { code: "KR", label: "South Korea" }
   ];
 
-  const countrySelect = document.getElementById("countrySelect");
+  const primarySelect = document.getElementById("countrySelectPrimary");
+  const secondarySelect = document.getElementById("countrySelectSecondary");
   const countryLabel = document.getElementById("countryLabel");
   const dateLabel = document.getElementById("dateLabel");
   const tracksBody = document.getElementById("tracksBody");
+  const compareContainer = document.getElementById("compareContainer");
+  const compareLabel = document.getElementById("compareLabel");
 
-  function populateCountries() {
+  function populateCountrySelects() {
     countries.forEach(c => {
-      const option = document.createElement("option");
-      option.value = c.code;
-      option.textContent = c.label;
-      if (c.code === "NL") option.selected = true;
-      countrySelect.appendChild(option);
+      const opt1 = document.createElement("option");
+      opt1.value = c.code;
+      opt1.textContent = c.label;
+      if (c.code === "NL") opt1.selected = true;
+      primarySelect.appendChild(opt1);
+
+      const opt2 = document.createElement("option");
+      opt2.value = c.code;
+      opt2.textContent = c.label;
+      if (c.code === "DE") opt2.selected = true;
+      secondarySelect.appendChild(opt2);
     });
   }
 
@@ -181,7 +277,7 @@
     return await res.json();
   }
 
-  function renderTracks(data) {
+  function renderPrimaryTracks(data) {
     countryLabel.textContent = data.country || "–";
     dateLabel.textContent = data.date || "–";
 
@@ -236,25 +332,146 @@
     });
   }
 
-  async function loadCountry(countryCode) {
+  function buildKey(track) {
+    // Gebruik combinatie van title + artist als “zelfde track” in beide landen
+    return (track.title || "").toLowerCase().trim() + "___" + (track.artist || "").toLowerCase().trim();
+  }
+
+  function renderComparison(countryA, dataA, countryB, dataB) {
+    const tracksA = dataA.tracks || [];
+    const tracksB = dataB.tracks || [];
+
+    compareLabel.textContent = `${countryA} vs ${countryB}`;
+    compareContainer.innerHTML = "";
+
+    // Maps
+    const mapA = new Map();
+    const mapB = new Map();
+
+    tracksA.forEach(t => {
+      mapA.set(buildKey(t), t);
+    });
+    tracksB.forEach(t => {
+      mapB.set(buildKey(t), t);
+    });
+
+    const inBoth = [];
+    const uniqueA = [];
+    const uniqueB = [];
+
+    // In beide
+    mapA.forEach((track, key) => {
+      if (mapB.has(key)) {
+        inBoth.push({
+          title: track.title,
+          artist: track.artist,
+          rankA: track.rank,
+          rankB: mapB.get(key).rank
+        });
+      } else {
+        uniqueA.push({
+          title: track.title,
+          artist: track.artist,
+          rank: track.rank
+        });
+      }
+    });
+
+    // Alleen in B
+    mapB.forEach((track, key) => {
+      if (!mapA.has(key)) {
+        uniqueB.push({
+          title: track.title,
+          artist: track.artist,
+          rank: track.rank
+        });
+      }
+    });
+
+    function makeListCard(title, items, type) {
+      const card = document.createElement("div");
+      card.className = "compare-card";
+
+      const h3 = document.createElement("h3");
+      h3.textContent = title;
+      card.appendChild(h3);
+
+      const ul = document.createElement("ul");
+      ul.className = "compare-list";
+
+      if (items.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "Geen tracks in deze categorie.";
+        ul.appendChild(li);
+      } else {
+        items.forEach(item => {
+          const li = document.createElement("li");
+          if (type === "both") {
+            li.innerHTML =
+              `<strong>${item.title}</strong> <span>– ${item.artist}</span>` +
+              `<span class="tag tag-both">Posities: ${countryA} #${item.rankA}, ${countryB} #${item.rankB}</span>`;
+          } else if (type === "uniqueA") {
+            li.innerHTML =
+              `<strong>${item.title}</strong> <span>– ${item.artist}</span>` +
+              `<span class="tag tag-unique">Alleen in ${countryA}, #${item.rank}</span>`;
+          } else {
+            li.innerHTML =
+              `<strong>${item.title}</strong> <span>– ${item.artist}</span>` +
+              `<span class="tag tag-unique">Alleen in ${countryB}, #${item.rank}</span>`;
+          }
+          ul.appendChild(li);
+        });
+      }
+
+      card.appendChild(ul);
+      return card;
+    }
+
+    const cardBoth = makeListCard("In beide landen", inBoth, "both");
+    const cardA = makeListCard(`Alleen in ${countryA}`, uniqueA, "uniqueA");
+    const cardB = makeListCard(`Alleen in ${countryB}`, uniqueB, "uniqueB");
+
+    compareContainer.appendChild(cardBoth);
+    compareContainer.appendChild(cardA);
+    compareContainer.appendChild(cardB);
+  }
+
+  async function loadPrimaryAndCompare() {
+    const countryA = primarySelect.value;
+    const countryB = secondarySelect.value;
+
     tracksBody.innerHTML = "<tr><td colspan='4'>Loading…</td></tr>";
+    compareContainer.innerHTML = "<div class='compare-card'><h3>Bezig met laden…</h3></div>";
+    compareLabel.textContent = `${countryA} vs ${countryB}`;
+
     try {
-      const data = await fetchTopTracks(countryCode, 20);
-      renderTracks(data);
+      const [dataA, dataB] = await Promise.all([
+        fetchTopTracks(countryA, 20),
+        fetchTopTracks(countryB, 20)
+      ]);
+
+      renderPrimaryTracks(dataA);
+      renderComparison(countryA, dataA, countryB, dataB);
     } catch (err) {
       console.error(err);
       tracksBody.innerHTML =
         "<tr><td colspan='4'>Error loading data. Check console.</td></tr>";
+      compareContainer.innerHTML =
+        "<div class='compare-card'><h3>Error bij laden van vergelijking.</h3></div>";
     }
   }
 
-  countrySelect.addEventListener("change", e => {
-    loadCountry(e.target.value);
+  primarySelect.addEventListener("change", () => {
+    loadPrimaryAndCompare();
+  });
+
+  secondarySelect.addEventListener("change", () => {
+    loadPrimaryAndCompare();
   });
 
   // Init
-  populateCountries();
-  loadCountry("NL");
+  populateCountrySelects();
+  loadPrimaryAndCompare();
 </script>
 
 </body>
