@@ -50,17 +50,44 @@
       font-size: 14px;
     }
 
+    .tables-wrapper {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .table-card {
+      background: #14141c;
+      border-radius: 10px;
+      padding: 10px 10px 16px 10px;
+      border: 1px solid #262636;
+    }
+
+    .table-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .table-subtitle {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 16px;
+      margin-top: 4px;
     }
 
     th, td {
       text-align: left;
-      padding: 8px 10px;
+      padding: 6px 8px;
       border-bottom: 1px solid #2a2a33;
       vertical-align: middle;
+      font-size: 13px;
     }
 
     th {
@@ -69,17 +96,17 @@
     }
 
     .rank {
-      width: 40px;
+      width: 32px;
       opacity: 0.7;
     }
 
     .cover-cell {
-      width: 60px;
+      width: 46px;
     }
 
     .cover-img {
-      width: 48px;
-      height: 48px;
+      width: 38px;
+      height: 38px;
       border-radius: 4px;
       object-fit: cover;
     }
@@ -95,60 +122,32 @@
 
     .artist {
       opacity: 0.85;
-      font-size: 14px;
+      font-size: 12px;
     }
 
-    .section-title {
-      margin-top: 32px;
-      margin-bottom: 8px;
-      font-size: 18px;
-      font-weight: bold;
+    .status-col {
+      width: 90px;
     }
 
-    .compare-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      margin-top: 8px;
-    }
-
-    .compare-card {
-      background: #181820;
-      border-radius: 8px;
-      padding: 12px;
-      border: 1px solid #262636;
-    }
-
-    .compare-card h3 {
-      margin: 0 0 8px 0;
-      font-size: 15px;
-      font-weight: bold;
-    }
-
-    .compare-list {
-      list-style: none;
-      padding-left: 0;
-      margin: 0;
-      max-height: 320px;
-      overflow-y: auto;
-      font-size: 14px;
-    }
-
-    .compare-list li {
-      padding: 4px 0;
-      border-bottom: 1px solid #262636;
-    }
-
-    .compare-list li span {
-      opacity: 0.85;
-    }
-
-    .tag {
+    .status-tag {
       display: inline-block;
       padding: 2px 6px;
       border-radius: 4px;
       font-size: 11px;
-      margin-left: 6px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .row-both {
+      background: #10231a;
+    }
+
+    .row-unique-left {
+      background: #241416;
+    }
+
+    .row-unique-right {
+      background: #1b1424;
     }
 
     .tag-both {
@@ -161,8 +160,30 @@
       color: #ffd7d7;
     }
 
+    .legend {
+      margin-top: 16px;
+      font-size: 12px;
+      opacity: 0.8;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-swatch {
+      width: 16px;
+      height: 10px;
+      border-radius: 3px;
+    }
+
     .footer {
-      margin-top: 30px;
+      margin-top: 24px;
       opacity: 0.4;
       font-size: 12px;
     }
@@ -184,34 +205,69 @@
       <select id="countrySelectSecondary"></select>
     </div>
     <div class="meta">
-      Hoofdland: <span id="countryLabel">NL</span> · Datum: <span id="dateLabel">–</span>
+      Vergelijk: <span id="compareLabel">NL vs DE</span> · Datum: <span id="dateLabel">–</span>
     </div>
   </div>
 
-  <!-- Hoofdland top 20 -->
-  <table>
-    <thead>
-      <tr>
-        <th class="rank">#</th>
-        <th></th>
-        <th>Track</th>
-        <th>Artist</th>
-      </tr>
-    </thead>
-    <tbody id="tracksBody">
-      <tr>
-        <td colspan="4">Loading…</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="tables-wrapper">
+    <!-- Linker tabel: hoofdland -->
+    <div class="table-card">
+      <div class="table-title" id="titleLeft">Top 20 – NL</div>
+      <div class="table-subtitle" id="subtitleLeft">Hoofdland</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="rank">#</th>
+            <th></th>
+            <th>Track</th>
+            <th>Artist</th>
+            <th class="status-col">Status</th>
+          </tr>
+        </thead>
+        <tbody id="tracksBodyLeft">
+          <tr>
+            <td colspan="5">Loading…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-  <!-- Vergelijking -->
-  <div class="section-title" id="compareTitle">
-    Vergelijking: <span id="compareLabel">NL vs DE</span>
+    <!-- Rechter tabel: vergelijkland -->
+    <div class="table-card">
+      <div class="table-title" id="titleRight">Top 20 – DE</div>
+      <div class="table-subtitle" id="subtitleRight">Vergelijkland</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="rank">#</th>
+            <th></th>
+            <th>Track</th>
+            <th>Artist</th>
+            <th class="status-col">Status</th>
+          </tr>
+        </thead>
+        <tbody id="tracksBodyRight">
+          <tr>
+            <td colspan="5">Loading…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <div id="compareContainer" class="compare-grid">
-    <!-- Wordt gevuld door JS -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#10231a;"></div>
+      <span>Groen: track staat in <strong>beide</strong> landen</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#241416;"></div>
+      <span>Rood links: track staat <strong>alleen in hoofdland</strong></span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#1b1424;"></div>
+      <span>Rood rechts: track staat <strong>alleen in vergelijkland</strong></span>
+    </div>
   </div>
 
   <div class="footer">
@@ -245,11 +301,14 @@
 
   const primarySelect = document.getElementById("countrySelectPrimary");
   const secondarySelect = document.getElementById("countrySelectSecondary");
-  const countryLabel = document.getElementById("countryLabel");
-  const dateLabel = document.getElementById("dateLabel");
-  const tracksBody = document.getElementById("tracksBody");
-  const compareContainer = document.getElementById("compareContainer");
   const compareLabel = document.getElementById("compareLabel");
+  const dateLabel = document.getElementById("dateLabel");
+  const tracksBodyLeft = document.getElementById("tracksBodyLeft");
+  const tracksBodyRight = document.getElementById("tracksBodyRight");
+  const titleLeft = document.getElementById("titleLeft");
+  const titleRight = document.getElementById("titleRight");
+  const subtitleLeft = document.getElementById("subtitleLeft");
+  const subtitleRight = document.getElementById("subtitleRight");
 
   function populateCountrySelects() {
     countries.forEach(c => {
@@ -277,20 +336,31 @@
     return await res.json();
   }
 
-  function renderPrimaryTracks(data) {
-    countryLabel.textContent = data.country || "–";
-    dateLabel.textContent = data.date || "–";
+  function buildKey(track) {
+    return (track.title || "").toLowerCase().trim() + "___" +
+           (track.artist || "").toLowerCase().trim();
+  }
 
-    const tracks = data.tracks || [];
-    tracksBody.innerHTML = "";
+  function renderTable(bodyEl, tracks, otherMap, countryCode, side) {
+    bodyEl.innerHTML = "";
 
-    if (tracks.length === 0) {
-      tracksBody.innerHTML = "<tr><td colspan='4'>Geen tracks gevonden.</td></tr>";
+    if (!tracks || tracks.length === 0) {
+      bodyEl.innerHTML = "<tr><td colspan='5'>Geen tracks gevonden.</td></tr>";
       return;
     }
 
     tracks.forEach(track => {
+      const key = buildKey(track);
+      const inBoth = otherMap.has(key);
       const tr = document.createElement("tr");
+
+      if (inBoth) {
+        tr.className = "row-both";
+      } else if (side === "left") {
+        tr.className = "row-unique-left";
+      } else {
+        tr.className = "row-unique-right";
+      }
 
       const rankTd = document.createElement("td");
       rankTd.className = "rank";
@@ -323,126 +393,44 @@
       artistTd.className = "artist";
       artistTd.textContent = track.artist;
 
+      const statusTd = document.createElement("td");
+      statusTd.className = "status-col";
+      const statusSpan = document.createElement("span");
+      statusSpan.className = "status-tag";
+
+      if (inBoth) {
+        statusSpan.classList.add("tag-both");
+        statusSpan.textContent = "Beide landen";
+      } else {
+        statusSpan.classList.add("tag-unique");
+        statusSpan.textContent = `Alleen in ${countryCode}`;
+      }
+
+      statusTd.appendChild(statusSpan);
+
       tr.appendChild(rankTd);
       tr.appendChild(coverTd);
       tr.appendChild(titleTd);
       tr.appendChild(artistTd);
+      tr.appendChild(statusTd);
 
-      tracksBody.appendChild(tr);
+      bodyEl.appendChild(tr);
     });
   }
 
-  function buildKey(track) {
-    // Gebruik combinatie van title + artist als “zelfde track” in beide landen
-    return (track.title || "").toLowerCase().trim() + "___" + (track.artist || "").toLowerCase().trim();
-  }
-
-  function renderComparison(countryA, dataA, countryB, dataB) {
-    const tracksA = dataA.tracks || [];
-    const tracksB = dataB.tracks || [];
-
-    compareLabel.textContent = `${countryA} vs ${countryB}`;
-    compareContainer.innerHTML = "";
-
-    // Maps
-    const mapA = new Map();
-    const mapB = new Map();
-
-    tracksA.forEach(t => {
-      mapA.set(buildKey(t), t);
-    });
-    tracksB.forEach(t => {
-      mapB.set(buildKey(t), t);
-    });
-
-    const inBoth = [];
-    const uniqueA = [];
-    const uniqueB = [];
-
-    // In beide
-    mapA.forEach((track, key) => {
-      if (mapB.has(key)) {
-        inBoth.push({
-          title: track.title,
-          artist: track.artist,
-          rankA: track.rank,
-          rankB: mapB.get(key).rank
-        });
-      } else {
-        uniqueA.push({
-          title: track.title,
-          artist: track.artist,
-          rank: track.rank
-        });
-      }
-    });
-
-    // Alleen in B
-    mapB.forEach((track, key) => {
-      if (!mapA.has(key)) {
-        uniqueB.push({
-          title: track.title,
-          artist: track.artist,
-          rank: track.rank
-        });
-      }
-    });
-
-    function makeListCard(title, items, type) {
-      const card = document.createElement("div");
-      card.className = "compare-card";
-
-      const h3 = document.createElement("h3");
-      h3.textContent = title;
-      card.appendChild(h3);
-
-      const ul = document.createElement("ul");
-      ul.className = "compare-list";
-
-      if (items.length === 0) {
-        const li = document.createElement("li");
-        li.textContent = "Geen tracks in deze categorie.";
-        ul.appendChild(li);
-      } else {
-        items.forEach(item => {
-          const li = document.createElement("li");
-          if (type === "both") {
-            li.innerHTML =
-              `<strong>${item.title}</strong> <span>– ${item.artist}</span>` +
-              `<span class="tag tag-both">Posities: ${countryA} #${item.rankA}, ${countryB} #${item.rankB}</span>`;
-          } else if (type === "uniqueA") {
-            li.innerHTML =
-              `<strong>${item.title}</strong> <span>– ${item.artist}</span>` +
-              `<span class="tag tag-unique">Alleen in ${countryA}, #${item.rank}</span>`;
-          } else {
-            li.innerHTML =
-              `<strong>${item.title}</strong> <span>– ${item.artist}</span>` +
-              `<span class="tag tag-unique">Alleen in ${countryB}, #${item.rank}</span>`;
-          }
-          ul.appendChild(li);
-        });
-      }
-
-      card.appendChild(ul);
-      return card;
-    }
-
-    const cardBoth = makeListCard("In beide landen", inBoth, "both");
-    const cardA = makeListCard(`Alleen in ${countryA}`, uniqueA, "uniqueA");
-    const cardB = makeListCard(`Alleen in ${countryB}`, uniqueB, "uniqueB");
-
-    compareContainer.appendChild(cardBoth);
-    compareContainer.appendChild(cardA);
-    compareContainer.appendChild(cardB);
-  }
-
-  async function loadPrimaryAndCompare() {
+  async function loadCompare() {
     const countryA = primarySelect.value;
     const countryB = secondarySelect.value;
 
-    tracksBody.innerHTML = "<tr><td colspan='4'>Loading…</td></tr>";
-    compareContainer.innerHTML = "<div class='compare-card'><h3>Bezig met laden…</h3></div>";
     compareLabel.textContent = `${countryA} vs ${countryB}`;
+    dateLabel.textContent = "–";
+    tracksBodyLeft.innerHTML = "<tr><td colspan='5'>Loading…</td></tr>";
+    tracksBodyRight.innerHTML = "<tr><td colspan='5'>Loading…</td></tr>";
+
+    titleLeft.textContent = `Top 20 – ${countryA}`;
+    titleRight.textContent = `Top 20 – ${countryB}`;
+    subtitleLeft.textContent = "Hoofdland";
+    subtitleRight.textContent = "Vergelijkland";
 
     try {
       const [dataA, dataB] = await Promise.all([
@@ -450,28 +438,35 @@
         fetchTopTracks(countryB, 20)
       ]);
 
-      renderPrimaryTracks(dataA);
-      renderComparison(countryA, dataA, countryB, dataB);
+      // Toon datum van hoofdland (Apple geeft sowieso actuele feed)
+      dateLabel.textContent = dataA.date || "";
+
+      const tracksA = dataA.tracks || [];
+      const tracksB = dataB.tracks || [];
+
+      const mapA = new Map();
+      const mapB = new Map();
+
+      tracksA.forEach(t => mapA.set(buildKey(t), t));
+      tracksB.forEach(t => mapB.set(buildKey(t), t));
+
+      renderTable(tracksBodyLeft, tracksA, mapB, countryA, "left");
+      renderTable(tracksBodyRight, tracksB, mapA, countryB, "right");
     } catch (err) {
       console.error(err);
-      tracksBody.innerHTML =
-        "<tr><td colspan='4'>Error loading data. Check console.</td></tr>";
-      compareContainer.innerHTML =
-        "<div class='compare-card'><h3>Error bij laden van vergelijking.</h3></div>";
+      tracksBodyLeft.innerHTML =
+        "<tr><td colspan='5'>Error loading data. Check console.</td></tr>";
+      tracksBodyRight.innerHTML =
+        "<tr><td colspan='5'>Error loading data. Check console.</td></tr>";
     }
   }
 
-  primarySelect.addEventListener("change", () => {
-    loadPrimaryAndCompare();
-  });
-
-  secondarySelect.addEventListener("change", () => {
-    loadPrimaryAndCompare();
-  });
+  primarySelect.addEventListener("change", loadCompare);
+  secondarySelect.addEventListener("change", loadCompare);
 
   // Init
   populateCountrySelects();
-  loadPrimaryAndCompare();
+  loadCompare();
 </script>
 
 </body>
